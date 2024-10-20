@@ -42,6 +42,7 @@ func BasicAuthLogin(c *fiber.Ctx) error {
 	}
 
 	token, token_err := jwt_service.CreateToken(
+		user.ID.String(),
 		user.Email,
 		user.Name,
 		user.Username,

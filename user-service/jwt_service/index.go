@@ -10,9 +10,8 @@ import (
 var secretKey = []byte("I Want Something Just Like this Todo do do do dooo!")
 
 // CreateToken generates a JWT token with custom claims
-func CreateToken(id string, email string, name string, username string) (string, error) {
+func CreateToken(email string, name string, username string) (string, error) {
 	claims := jwt.MapClaims{
-		"id":       id,
 		"email":    email,
 		"name":     name,
 		"username": username,                              // Include Username in JWT claims

@@ -1,59 +1,22 @@
 package models
 
-import "errors"
+import (
+	"time"
 
-// Todo struct represents a todo item
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
+)
+
+// Todo represents a todo item in the database
 type Todo struct {
-	ID       string `json:"id"`
-	Title    string `json:"title"`
-	Complete bool   `json:"complete"`
+	ID          primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	UserId      string             `bson:"user_id" json:"user_id"`
+	Title       string             `bson:"title" json:"title"`
+	Description string             `bson:"description" json:"description"`
+	Completed   bool               `bson:"completed" json:"completed"`
+	CreatedAt   time.Time          `bson:"created_at" json:"created_at"`
+	UpdatedAt   time.Time          `bson:"updated_at" json:"updated_at"`
 }
 
-// In-memory todo data
-var todos = []Todo{
-	{ID: "1", Title: "Buy groceries", Complete: false},
-	{ID: "2", Title: "Learn Go Fiber", Complete: false},
-}
-
-// Get all todos
-func GetAllTodos() []Todo {
-	return todos
-}
-
-// Get todo by ID
-func GetTodoByID(id string) (Todo, error) {
-	for _, todo := range todos {
-		if todo.ID == id {
-			return todo, nil
-		}
-	}
-	return Todo{}, errors.New("Todo not found")
-}
-
-// Add a new todo
-func AddTodo(todo *Todo) {
-	todos = append(todos, *todo)
-}
-
-// Update todo by ID
-func UpdateTodo(id string, updatedTodo *Todo) (Todo, error) {
-	for i, todo := range todos {
-		if todo.ID == id {
-			todos[i].Title = updatedTodo.Title
-			todos[i].Complete = updatedTodo.Complete
-			return todos[i], nil
-		}
-	}
-	return Todo{}, errors.New("Todo not found")
-}
-
-// Delete todo by ID
-func DeleteTodo(id string) error {
-	for i, todo := range todos {
-		if todo.ID == id {
-			todos = append(todos[:i], todos[i+1:]...)
-			return nil
-		}
-	}
-	return errors.New("Todo not found")
-}
+// TodoCollection represents the MongoDB collection
+var TodoCollection *mongo.Collection
