@@ -4,6 +4,7 @@ import (
 	"auth-service/models"
 	"context"
 	"log"
+	"os"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -12,7 +13,9 @@ import (
 var Client *mongo.Client
 
 func Database() {
-	mongoURI := "mongodb://localhost:27017"
+	// mongoURI := "mongodb://localhost:27017"
+	mongoURI := os.Getenv("MONGODB_URI")
+
 	var err error
 
 	// Create a new MongoDB client and connect to the database

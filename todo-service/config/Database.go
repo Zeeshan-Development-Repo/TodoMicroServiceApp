@@ -3,6 +3,7 @@ package config
 import (
 	"context"
 	"log"
+	"os"
 	"todo-service/models"
 
 	"go.mongodb.org/mongo-driver/mongo"
@@ -12,7 +13,9 @@ import (
 var Client *mongo.Client
 
 func Database() {
-	mongoURI := "mongodb://localhost:27017"
+	// mongoURI := "mongodb://localhost:27017"
+	mongoURI := os.Getenv("MONGODB_URI")
+
 	var err error
 
 	// Create a new MongoDB client and connect to the database

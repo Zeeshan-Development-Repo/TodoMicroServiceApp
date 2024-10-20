@@ -9,7 +9,7 @@ import (
 
 // TodoService interface defines the methods for managing todos
 type TodoService interface {
-	CreateTodo(todo *models.Todo) (*models.Todo, error)
+	CreateTodo(title string, description string, userId string) (*models.Todo, error)
 	GetTodo(id primitive.ObjectID) (*models.Todo, error)
 	UpdateTodo(id primitive.ObjectID, updatedTodo models.Todo) (*models.Todo, error)
 	DeleteTodo(id primitive.ObjectID) error
@@ -25,8 +25,8 @@ func NewTodoService() TodoService {
 }
 
 // CreateTodo creates a new todo
-func (s *todoService) CreateTodo(todo *models.Todo) (*models.Todo, error) {
-	return repos.CreateTodo(todo)
+func (s *todoService) CreateTodo(title string, description string, userId string) (*models.Todo, error) {
+	return repos.CreateTodo(title, description, userId)
 }
 
 // GetTodo retrieves a todo by ID

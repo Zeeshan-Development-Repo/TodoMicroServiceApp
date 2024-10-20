@@ -10,15 +10,22 @@ import (
 )
 
 // CreateTodo inserts a new todo item into the database
-func CreateTodo(todo *models.Todo) (*models.Todo, error) {
-	todo.CreatedAt = time.Now()
-	todo.UpdatedAt = time.Now()
+func CreateTodo(title string, description string, userId string) (*models.Todo, error) {
+	todo := models.Todo{
+		ID:          primitive.NewObjectID(),
+		Title:       title,
+		Description: description,
+		UserId:      userId,
+		Completed:   false,
+		CreatedAt:   time.Now(),
+		UpdatedAt:   time.Now(),
+	}
 	result, err := models.TodoCollection.InsertOne(context.Background(), todo)
 	if err != nil {
 		return nil, err
 	}
 	todo.ID = result.InsertedID.(primitive.ObjectID)
-	return todo, nil
+	return &todo, nil
 }
 
 // GetTodo retrieves a todo item by its ID

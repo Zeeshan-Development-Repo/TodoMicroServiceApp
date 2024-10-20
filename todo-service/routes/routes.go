@@ -2,16 +2,12 @@ package routes
 
 import (
 	"todo-service/controllers"
-	"todo-service/jwt_service"
 	"todo-service/services"
 
 	"github.com/gofiber/fiber/v2"
 )
 
 func SetupRoutes(app *fiber.App) {
-	// Setup Protection
-	app.Use(jwt_service.ProtectedRoute())
-
 	// Todo routes
 	setupTodoRoutes(app)
 }

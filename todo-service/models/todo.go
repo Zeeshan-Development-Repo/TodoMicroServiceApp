@@ -9,7 +9,7 @@ import (
 
 // Todo represents a todo item in the database
 type Todo struct {
-	ID          primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	ID          primitive.ObjectID `bson:"_id" json:"id"`
 	UserId      string             `bson:"user_id" json:"user_id"`
 	Title       string             `bson:"title" json:"title"`
 	Description string             `bson:"description" json:"description"`

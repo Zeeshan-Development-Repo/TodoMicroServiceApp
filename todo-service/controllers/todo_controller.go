@@ -20,14 +20,25 @@ func NewTodoController(service services.TodoService) *TodoController {
 	return &TodoController{service: service}
 }
 
+type CreateTodoRequest struct {
+	Title       string `json:"title"`
+	Description string `json:"description"`
+}
+
 // CreateTodoHandler handles the creation of a new todo item
 func (c *TodoController) CreateTodoHandler(ctx *fiber.Ctx) error {
-	var todo models.Todo
-	if err := ctx.BodyParser(&todo); err != nil {
+	var Body CreateTodoRequest
+	if err := ctx.BodyParser(&Body); err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid input"})
 	}
 
-	createdTodo, err := c.service.CreateTodo(&todo)
+	claims := ctx.Locals("userClaims").(jwt.MapClaims)
+	user, err := jwt_service.ExtractUserFromClaims(claims)
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to get user"})
+	}
+
+	createdTodo, err := c.service.CreateTodo(Body.Title, Body.Description, user.Id)
 	if err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to create todo"})
 	}
