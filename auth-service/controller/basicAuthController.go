@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"auth-service/jwt_service"
 	"auth-service/services"
 
 	"github.com/gofiber/fiber/v2"
@@ -32,10 +33,24 @@ func BasicAuthLogin(c *fiber.Ctx) error {
 	}
 
 	// Compare password (assuming user.Password is stored in DB)
-	if user.Password != body.Password {
+	pass_err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(body.Password))
+	if pass_err != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"status":  "error",
 			"message": "Invalid credentials",
+		})
+	}
+
+	token, token_err := jwt_service.CreateToken(
+		user.Email,
+		user.Name,
+		user.Username,
+	)
+
+	if token_err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"status":  "error",
+			"message": "Login Failed!",
 		})
 	}
 
@@ -43,14 +58,13 @@ func BasicAuthLogin(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"status":  "success",
 		"message": "Login successful",
-		"user":    user.Username,
+		"token":   token,
 	})
 }
 
 // Request body struct for creating an account
 type CreateAccountRequest struct {
 	Username string `json:"username"`
-	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
@@ -65,7 +79,7 @@ func BasicCreateAccount(c *fiber.Ctx) error {
 	}
 
 	// Check if the username or email already exists
-	_, err := services.CheckUser(body.Email)
+	_, err := services.CheckUser(body.Username)
 	if err == nil { // If no error, user already exists
 		return c.Status(fiber.StatusConflict).JSON(fiber.Map{
 			"status":  "error",
@@ -82,7 +96,7 @@ func BasicCreateAccount(c *fiber.Ctx) error {
 		})
 	}
 
-	err = services.CreateUser(body.Username, body.Email, string(hashedPassword))
+	err = services.CreateUser(body.Username, string(hashedPassword))
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"status":  "error",
@@ -94,5 +108,33 @@ func BasicCreateAccount(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
 		"status":  "success",
 		"message": "User created successfully",
+	})
+}
+
+// Request body struct for creating an account
+type BasicVerifyTokenRequest struct {
+	Token string `json:"token"`
+}
+
+func BasicVerifyToken(c *fiber.Ctx) error {
+	// Parse the request body to get user details
+	var body BasicVerifyTokenRequest
+	if err := c.BodyParser(&body); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"status":  "error",
+			"message": "Invalid request body",
+		})
+	}
+
+	if _, err := jwt_service.VerifyToken(body.Token); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"status":  "error",
+			"message": "Invalid Token Error from jwt service",
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"status":  "Success",
+		"message": "Token Verified",
 	})
 }

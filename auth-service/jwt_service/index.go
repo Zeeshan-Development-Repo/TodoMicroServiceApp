@@ -7,40 +7,42 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-type User struct {
-	Username string
-	Password string
-}
+var secretKey = []byte("I Want Something Just Like this Todo do do do dooo!")
 
-var secretKey = []byte("secret-key")
-
-func CreateToken(username string) (string, error) {
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256,
-		jwt.MapClaims{
-			"username": username,
-			"exp":      time.Now().Add(time.Hour * 24).Unix(),
-		})
-
-	tokenString, err := token.SignedString(secretKey)
-	if err != nil {
-		return "", err
+// CreateToken generates a JWT token with custom claims
+func CreateToken(email string, name string, username string) (string, error) {
+	claims := jwt.MapClaims{
+		"email":    email,
+		"name":     name,
+		"username": username,                              // Include Username in JWT claims
+		"exp":      time.Now().Add(time.Hour * 24).Unix(), // Token expiration time
 	}
 
-	return tokenString, nil
+	// Create token using the claims
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	// Sign the token using the secret key
+	return token.SignedString(secretKey)
 }
 
-func VerifyToken(tokenString string) error {
+// VerifyToken parses and validates the given token
+func VerifyToken(tokenString string) (jwt.MapClaims, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		// Ensure the signing method is HMAC
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
 		return secretKey, nil
 	})
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	if !token.Valid {
-		return fmt.Errorf("invalid token")
+	// Check if the token is valid
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		return claims, nil
+	} else {
+		return nil, fmt.Errorf("invalid token")
 	}
-
-	return nil
 }
