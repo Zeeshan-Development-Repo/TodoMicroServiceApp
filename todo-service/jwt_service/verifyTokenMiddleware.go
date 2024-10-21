@@ -2,10 +2,43 @@ package jwt_service
 
 import (
 	"strings"
+	"todo-service/models"
 
 	"github.com/gofiber/fiber/v2"
 )
 
+func GetToken(c *fiber.Ctx) (string, error) {
+	// Extract the token from the Authorization header
+	authHeader := c.Get("Authorization")
+
+	// Check if the header is present and properly formatted
+	if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer ") {
+		return "", nil
+	}
+
+	// Extract the token part, removing "Bearer " prefix
+	tokenString := strings.TrimPrefix(authHeader, "Bearer ")
+	return tokenString, nil
+}
+
+func GetUserFromClaims(ctx *fiber.Ctx) (*models.User, error) {
+	token, err := GetToken(ctx)
+	if err != nil {
+		return nil, ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Failed to retrieve token"})
+	}
+
+	claims, err := VerifyToken(token)
+	if err != nil {
+		return nil, ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid or expired token"})
+	}
+
+	user, err := ExtractUserFromClaims(claims)
+	if err != nil {
+		return nil, ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to extract user from claims"})
+	}
+
+	return user, nil
+}
 func ProtectedRoute() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		// Extract the token from the Authorization header

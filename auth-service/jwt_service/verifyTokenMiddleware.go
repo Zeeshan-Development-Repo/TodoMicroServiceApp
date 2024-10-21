@@ -6,6 +6,20 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
+func GetToken(c *fiber.Ctx) (string, error) {
+	// Extract the token from the Authorization header
+	authHeader := c.Get("Authorization")
+
+	// Check if the header is present and properly formatted
+	if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer ") {
+		return "", nil
+	}
+
+	// Extract the token part, removing "Bearer " prefix
+	tokenString := strings.TrimPrefix(authHeader, "Bearer ")
+	return tokenString, nil
+}
+
 func ProtectedRoute() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		// Extract the token from the Authorization header

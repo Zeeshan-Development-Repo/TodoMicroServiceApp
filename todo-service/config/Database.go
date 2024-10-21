@@ -14,12 +14,16 @@ var Client *mongo.Client
 
 func Database() {
 	// mongoURI := "mongodb://localhost:27017"
+	// mongoURI := os.Getenv("MONGODB_URI")
 	mongoURI := os.Getenv("MONGODB_URI")
+	if mongoURI == "" {
+		mongoURI = "mongodb://localhost:27017"
+	}
 
 	var err error
 
 	// Create a new MongoDB client and connect to the database
-	Client, err = mongo.Connect(context.TODO(), options.Client().ApplyURI(mongoURI))
+	Client, err = mongo.Connect(context.Background(), options.Client().ApplyURI(mongoURI))
 	if err != nil {
 		log.Fatal(err)
 	}

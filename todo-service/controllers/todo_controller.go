@@ -32,10 +32,9 @@ func (c *TodoController) CreateTodoHandler(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid input"})
 	}
 
-	claims := ctx.Locals("userClaims").(jwt.MapClaims)
-	user, err := jwt_service.ExtractUserFromClaims(claims)
+	user, err := jwt_service.GetUserFromClaims(ctx)
 	if err != nil {
-		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to get user"})
+		return err
 	}
 
 	createdTodo, err := c.service.CreateTodo(Body.Title, Body.Description, user.Id)

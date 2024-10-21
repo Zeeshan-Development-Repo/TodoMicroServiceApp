@@ -13,8 +13,10 @@ import (
 var Client *mongo.Client
 
 func Database() {
-	// mongoURI := "mongodb://localhost:27017"
 	mongoURI := os.Getenv("MONGODB_URI")
+	if mongoURI == "" {
+		mongoURI = "mongodb://localhost:27017"
+	}
 
 	var err error
 
