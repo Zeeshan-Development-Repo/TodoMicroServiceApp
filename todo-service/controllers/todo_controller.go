@@ -6,16 +6,13 @@ import (
 	"todo-service/services"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/golang-jwt/jwt/v5"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-// TodoController is the structure that holds the TodoService
 type TodoController struct {
 	service services.TodoService
 }
 
-// NewTodoController creates a new TodoController
 func NewTodoController(service services.TodoService) *TodoController {
 	return &TodoController{service: service}
 }
@@ -89,7 +86,6 @@ func (c *TodoController) DeleteTodoHandler(ctx *fiber.Ctx) error {
 	if err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid ID format"})
 	}
-
 	err = c.service.DeleteTodo(id)
 	if err != nil {
 		return ctx.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Todo not found"})
@@ -100,22 +96,13 @@ func (c *TodoController) DeleteTodoHandler(ctx *fiber.Ctx) error {
 
 // GetTodosHandler retrieves all todos for a specific user
 func (c *TodoController) GetTodosHandler(ctx *fiber.Ctx) error {
-	claims := ctx.Locals("userClaims").(jwt.MapClaims)
-	user, err := jwt_service.ExtractUserFromClaims(claims)
-
+	user, err := jwt_service.GetUserFromClaims(ctx)
 	if err != nil {
-		println(err)
-		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Missing user_id parameter"})
+		return err
 	}
-
-	if user.Id == "" {
-		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Missing user_id parameter"})
-	}
-
 	todos, err := c.service.GetTodos(user.Id)
 	if err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to retrieve todos"})
 	}
-
 	return ctx.JSON(todos)
 }
